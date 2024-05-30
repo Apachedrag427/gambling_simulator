@@ -17,19 +17,24 @@ fn main() {
 
 
 	while !ui.rl.window_should_close() {
+		ui.step();
+
 		if let Some(key) = ui.rl.get_key_pressed() {
 			if key == raylib::consts::KeyboardKey::KEY_SPACE {
-				if !ui.displaying_pay_lines {
-					match ui.game.spin() {
-						_ => ()
-					};
-					if ui.game.lines.len() > 0 {
-						ui.displaying_pay_lines = true;
-					}
+				if !ui.displaying_pay_lines && !ui.spinning {
+					ui.start_spinning();
+				} else if ui.spinning {
+					ui.stop_spinning();
 				} else {
 					ui.displaying_pay_lines = false;
 				}
+			}
+		}
 
+		if ui.has_stopped_spinning() {
+			ui.last_money = ui.game.get_money();
+			if ui.game.lines.len() > 0 {
+				ui.displaying_pay_lines = true;
 			}
 		}
 		

@@ -114,7 +114,7 @@ pub struct SlotBoard {
 }
 
 impl SlotBoard {
-	fn rand_symbol(&mut self) -> SymbolType {
+	pub fn rand_symbol(&mut self) -> SymbolType {
 		TYPE_LIST[self.wa_table.next_rng(&mut rand::thread_rng())]
 	}
 
@@ -214,7 +214,7 @@ impl PayLine {
 pub struct SlotGame {
 	pub board: SlotBoard,
 
-	credits: i32,
+	credits: f64,
 	// denom is in cents
 	denom: i32,
 	// bet is in credits
@@ -303,7 +303,7 @@ impl SlotGame {
 			
 			denom: 1,
 			bet: 50,
-			credits: 100_00,
+			credits: 100_00.0,
 			lines: Vec::new(),
 			paylines
 		}
@@ -313,7 +313,7 @@ impl SlotGame {
 		self.denom
 	}
 	pub fn set_denom(&mut self, n: i32) {
-		self.credits *= self.denom / n;
+		self.credits *= self.denom as f64 / n as f64;
 		self.denom = n;
 	}
 
@@ -324,13 +324,17 @@ impl SlotGame {
 		self.bet = n;
 	}
 
-	pub fn get_credits(&self) -> i32 {
+	pub fn get_credits(&self) -> f64 {
 		self.credits
+	}
+
+	pub fn get_money(&self) -> f64 {
+		self.credits / (self.denom as f64 * 100.0)
 	}
 
 	fn pay_symbol(&mut self, kind: SymbolType) {
 		let val = VALUE_LOOKUP[kind.to_string().as_str()];
-		self.credits += val * (self.bet / 3);
+		self.credits += val as f64 * (self.bet / 3) as f64;
 	}
 
 	fn pay(&mut self) {
@@ -351,16 +355,17 @@ impl SlotGame {
 			};
 		}
 	}
-	pub fn spin(&mut self) -> Result<(), SpinError> {
-		if (self.credits - self.bet) < 0 {
+	pub fn spin(&mut self) -> Result<f64, SpinError> {
+		if (self.credits - self.bet as f64) < 0.0 {
 			return Err(SpinError::InsufficientCredits);
 		}
-		self.credits -= self.bet;
+		self.credits -= self.bet as f64;
+		let money = self.get_money();
 		self.board.spin();
 		self.pay();
 		println!("\nCredits: {}", self.credits);
 		println!("Money: {}\n", self.get_credits() as f32 / (self.get_denom() as f32 * 100_f32));
-		Ok(())
+		Ok(money)
 	}
 
 	pub fn get_slot(&self, x: usize, y: usize) -> &Symbol {
