@@ -3,6 +3,12 @@ pub mod ui {
 
 	use gambling_simulator::{SlotBoard, SlotGame, SymbolType};
 
+	#[derive(PartialEq)]
+	pub enum BoardSpinningState {
+		Spinning,
+		Stopping,
+		Stopped
+	}
 	pub struct UI {
 		slot_size: Vector2,
 		win_dimensions: (i32, i32),
@@ -13,7 +19,7 @@ pub mod ui {
 
 		pub game: SlotGame,
 		pub reels: Vec<Reel>,
-		pub spinning: bool,
+		pub spinning: BoardSpinningState,
 		stopped_spinning: bool,
 
 		pub displaying_pay_lines: bool,
@@ -86,7 +92,7 @@ pub mod ui {
 				
 				game,
 				reels,
-				spinning: false,
+				spinning: BoardSpinningState::Stopped,
 				stopped_spinning: false,
 
 				displaying_pay_lines: false,
@@ -118,9 +124,9 @@ pub mod ui {
 				}
 			}
 
-			if all_reels_stopped && self.spinning {
+			if all_reels_stopped && self.spinning != BoardSpinningState::Stopped {
 				self.stopped_spinning = true;
-				self.spinning = false;
+				self.spinning = BoardSpinningState::Stopped;
 			}
 		}
 
@@ -175,7 +181,7 @@ pub mod ui {
 		}
 
 		pub fn start_spinning(&mut self) {
-			if self.spinning {
+			if self.spinning != BoardSpinningState::Stopped {
 				return;
 			}
 
@@ -186,7 +192,7 @@ pub mod ui {
 				_ => ()
 			};
 
-			self.spinning = true;
+			self.spinning = BoardSpinningState::Spinning;
 
 			let mut i = 0;
 			for reel in &mut self.reels {
@@ -200,25 +206,28 @@ pub mod ui {
 		}
 
 		pub fn stop_spinning(&mut self) {
-			if !self.spinning {
+			if self.spinning != BoardSpinningState::Spinning {
 				return;
 			}
 			
 			let mut x = 0;
 			for reel in &mut self.reels {
-				reel.spinning = ReelSpinningState::Returning;
-				let spring = &mut reel.reel_spring_group.springs[0];
-				
-				spring.pos = 0.0;
-				spring.equilibrium = 0.0;
-				spring.vel = 10.0;
+				// reel.spinning = ReelSpinningState::Returning;
+				// let spring = &mut reel.reel_spring_group.springs[0];
+				// 
+				// spring.pos = 0.0;
+				// spring.equilibrium = 0.0;
+				// spring.vel = 10.0;
 
-				reel.reel_symbols.clear();
-				reel.reel_symbols.push(self.game.board.rand_symbol());
-				for y in 0..self.game.board.get_dimensions().1 {
-					reel.reel_symbols.push(self.game.get_slot(x, y).kind);
-				}
-				reel.reel_symbols.push(self.game.board.rand_symbol());
+				// reel.reel_symbols.clear();
+				// reel.reel_symbols.push(self.game.board.rand_symbol());
+				// for y in 0..self.game.board.get_dimensions().1 {
+					// reel.reel_symbols.push(self.game.get_slot(x, y).kind);
+				// }
+				// reel.reel_symbols.push(self.game.board.rand_symbol());
+				
+				self.spinning = BoardSpinningState::Stopping;
+				reel.scrolls_remaining = x;
 				x += 1;
 			}
 		}
