@@ -198,8 +198,6 @@ pub mod ui {
 			for reel in &mut self.reels {
 				i += 1;
 
-				let spring = &mut reel.reel_spring_group.springs[0];
-				spring.vel -= 7.5;
 				reel.spinning = ReelSpinningState::Spinning;
 				reel.scrolls_remaining = 10 + i*5;
 			}
@@ -366,7 +364,7 @@ pub mod ui {
 		}
 
 		fn step(&mut self, delta: f32, symbol_board: &Vec<SymbolType>, board: &mut SlotBoard) {
-			self.reel_spring_group.update(delta, 7.5, 0.3);
+			self.reel_spring_group.update(delta, 7.5, 0.6);
 
 			let spring = &mut self.reel_spring_group.springs[0];
 			if self.spinning == ReelSpinningState::Returning && spring.pos == 0.0 && spring.vel == 0.0 {
@@ -378,7 +376,7 @@ pub mod ui {
 				return;
 			}
 
-			spring.equilibrium = 1.0;
+			spring.equilibrium = 2.0;
 
 			if spring.pos > 1.0 {
 				spring.pos -= 1.0;
