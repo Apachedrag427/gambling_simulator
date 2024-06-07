@@ -376,7 +376,7 @@ pub mod ui {
 				return;
 			}
 
-			spring.equilibrium = 2.0;
+			spring.equilibrium = 2.5;
 
 			if spring.pos > 1.0 {
 				spring.pos -= 1.0;
